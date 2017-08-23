@@ -30,11 +30,6 @@ for (let entryName in config.entry) {
 config.plugins = [
   new webpack.HotModuleReplacementPlugin(),
   new HtmlWebpackPlugin({
-    template: path.join(__dirname, '..', 'src', 'public', 'background.html'),
-    filename: 'background.html',
-    chunks: ['background', 'devListener']
-  }),
-  new HtmlWebpackPlugin({
     template: path.join(__dirname, '..', 'src', 'public', 'window.html'),
     filename: 'window.html',
     chunks: ['popup']

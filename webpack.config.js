@@ -3,6 +3,8 @@ const path = require('path')
 const fileSystem = require('fs')
 const env = require('./utils/env')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+// const CopyWebpackPlugin = require('copy-webpack-plugin')
+const ExtractTextWebpackPlugin = require('extract-text-webpack-plugin')
 
 // load the secrets
 const alias = {}
@@ -29,18 +31,18 @@ const options = {
       {
         test: /\.(jsx|js)?$/,
         exclude: /node_modules/,
-        enforce: 'pre',
-        use: ['source-map-loader', 'eslint-loader']
-      },
-      {
-        test: /\.(jsx|js)?$/,
-        exclude: /node_modules/,
-        use: 'babel-loader'
+        use: ['source-map-loader', 'babel-loader']
       },
       {
         test: /\.css$/,
-        loader: 'style-loader!css-loader',
-        exclude: /node_modules/
+        exclude: /node_modules/,
+        use: ExtractTextWebpackPlugin.extract({
+          fallback: 'style-loader',
+          use: [
+            { loader: 'css-loader', options: { importLoaders: 1 } },
+            'postcss-loader'
+          ]
+        })
       },
       {
         test: new RegExp('.(' + fileExtensions.join('|') + ')$'),
@@ -55,7 +57,8 @@ const options = {
     ]
   },
   resolve: {
-    alias: alias
+    alias: alias,
+    extensions: [...fileExtensions, '.js', '.jsx', '.json', '.css']
   },
   stats: {
     colors: true
@@ -69,6 +72,14 @@ const options = {
       template: path.join(__dirname, 'src', 'public', 'popup.html'),
       filename: 'popup.html',
       chunks: ['popup']
+    }),
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, 'src', 'public', 'background.html'),
+      filename: 'background.html',
+      chunks: env.NODE_ENV === 'development' ? ['background', 'devListener'] : ['background']
+    }),
+    new ExtractTextWebpackPlugin({
+      filename: 'main.css'
     })
   ],
   devtool: env.NODE_ENV === 'development'
